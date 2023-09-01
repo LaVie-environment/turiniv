@@ -106,7 +106,7 @@ data "terraform_remote_state" "db" {
 }
 
 
-resource "aws_launch_configuration" "uat_env" {
+resource "aws_launch_configuration" "uat-lcg" {
   image_id        = "ami-0fb653ca2d3203ac1"
   instance_type   = "t2.micro"
   security_groups = [aws_security_group.instance.id]
@@ -124,8 +124,8 @@ resource "aws_launch_configuration" "uat_env" {
   }
 }
 
-resource "aws_autoscaling_group" "uat_env" {
-  launch_configuration = aws_launch_configuration.uat_env.name
+resource "aws_autoscaling_group" "uat-asg" {
+  launch_configuration = aws_launch_configuration.uat-lcg.name
   vpc_zone_identifier  = data.aws_subnets.default.ids
 
   target_group_arns = [aws_lb_target_group.asg.arn]
@@ -136,12 +136,12 @@ resource "aws_autoscaling_group" "uat_env" {
 
   tag {
     key                 = "Name"
-    value               = "terraform-asg-example"
+    value               = "uat-asg"
     propagate_at_launch = true
   }
 }
 
-resource "aws_security_group" "instance" {
+resource "aws_security_group" "uat-sg" {
   name = var.instance_security_group_name
 
   ingress {
@@ -152,7 +152,7 @@ resource "aws_security_group" "instance" {
   }
 }
 
-resource "aws_lb" "example" {
+resource "aws_lb" "uat-lb" {
   name               = var.alb_name
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
