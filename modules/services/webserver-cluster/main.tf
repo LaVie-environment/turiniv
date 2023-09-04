@@ -131,8 +131,8 @@ resource "aws_autoscaling_group" "uat-asg" {
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
 
-  min_size = 2
-  max_size = 10
+  min_size = 1
+  max_size = 3
 
   tag {
     key                 = "Name"
@@ -142,21 +142,34 @@ resource "aws_autoscaling_group" "uat-asg" {
 }
 
 resource "aws_security_group" "uat-sg" {
-  name = var.instance_security_group_name
+  name = "uat-fence"
 
   ingress {
-    from_port   = var.server_port
-    to_port     = var.server_port
+    from_port   = "22"
+    to_port     = "22"
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = "80"
+    to_port     = "80"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-resource "aws_lb" "uat-lb" {
-  name               = var.alb_name
-  load_balancer_type = "application"
+resource "aws_elb" "uat-elb" {
+  name               = "uat-elb"
   subnets            = data.aws_subnets.default.ids
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [aws_security_group.uat-sg.id]
 }
 
 resource "aws_lb_listener" "http" {

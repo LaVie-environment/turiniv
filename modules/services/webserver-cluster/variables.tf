@@ -20,10 +20,10 @@ variable "server_port" {
   default     = 8080
 }
 
-variable "alb_name" {
-  description = "The name of the ALB"
+variable "elb_name" {
+  description = "The name of the ELB"
   type        = string
-  default     = "terraform-asg-example"
+  default     = "uat-env-elb"
 }
 
 variable "instance_security_group_name" {
