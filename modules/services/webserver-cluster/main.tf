@@ -109,7 +109,7 @@ data "terraform_remote_state" "db" {
 resource "aws_launch_configuration" "uat-lcg" {
   image_id        = "ami-0fb653ca2d3203ac1"
   instance_type   = "t2.micro"
-  security_groups = [aws_security_group.instance.id]
+  security_groups = [aws_security_group.uat-sg.id]
 
   # Render the User Data script as a template
   user_data = templatefile("user-data.sh", {
