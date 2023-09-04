@@ -15,7 +15,7 @@ provider "aws" {
 }
 
 # Create a VPC
-resource "aws_vpc" "uat_vpc" {
+resource "aws_vpc" "uat-vpc" {
   cidr_block  = "178.0.0.0/16"
 
   tags = {
@@ -23,17 +23,17 @@ resource "aws_vpc" "uat_vpc" {
   }
 }
 
-resource "aws_internet_gateway" "uat_gw" {
-  vpc_id = aws_vpc.uat_vpc.id
+resource "aws_internet_gateway" "uat-gw" {
+  vpc_id = aws_vpc.uat-vpc.id
 
   tags = {
-    Name = "uat_igw"
+    Name = "uat-igw"
   }
 }
 
-resource "aws_subnet" "uat_public_subnet" {
-  vpc_id     = aws_vpc.uat_vpc.id
-  cidr_block = var.uat_public_subnet_cidr
+resource "aws_subnet" "uat-public-subnet" {
+  vpc_id     = aws_vpc.uat-vpc.id
+  cidr_block = ["10.0.0.0/20", "10.0.128.0/20"]
   map_public_ip_on_launch = true
   availability_zone = "eu-west-2a"
 
@@ -41,6 +41,17 @@ resource "aws_subnet" "uat_public_subnet" {
     Name = "uat-public_subnet"
   }
 }
+
+resource "aws_subnet" "uat-private-subnet" {
+  vpc_id     = aws_vpc.uat-vpc.id
+  cidr_block = ["10.0.16.0/20", "10.0.144.0/20"]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "uat-private-subnet"
+  }
+}
+
 
 resource "aws_route_table" "uat_public_rt" {
   vpc_id = aws_vpc.uat_vpc.id
@@ -219,26 +230,6 @@ resource "aws_lb_listener_rule" "asg" {
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.asg.arn
-  }
-}
-
-resource "aws_security_group" "alb" {
-  name = var.alb_security_group_name
-
-  # Allow inbound HTTP requests
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow all outbound requests
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
